@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/AspNetCoreOidc/.idea/.idea.AspNetCoreOidc/.idea/.gitignore
+/AspNetCoreOidc/.idea/.idea.AspNetCoreOidc/.idea/encodings.xml
+/AspNetCoreOidc/.idea/.idea.AspNetCoreOidc/.idea/indexLayout.xml
+/AspNetCoreOidc/.idea/.idea.AspNetCoreOidc/.idea/vcs.xml
