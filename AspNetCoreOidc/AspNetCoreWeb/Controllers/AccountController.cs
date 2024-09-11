@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AspNetCoreWeb.Models;
 using AspNetCoreWeb.Service;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,12 @@ namespace AspNetCoreWeb.Controllers;
 public class AccountController : Controller
 {
     private readonly IUserService _userService;
+    private readonly IConfiguration _configuration;
 
-    public AccountController(IUserService userService)
+    public AccountController(IUserService userService, IConfiguration configuration)
     {
         _userService = userService;
+        _configuration = configuration;
     }
     
     [HttpGet]
@@ -37,7 +40,7 @@ public class AccountController : Controller
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
         }
 
-        await ProcessSignInAsync(model, user);
+        await ProcessSignInAsync(user.Name, user.Roles, "SelfHost");
         return RedirectToAction("Index", "Home");
     }
 
@@ -48,13 +51,37 @@ public class AccountController : Controller
         return RedirectToPage("/Account/Login");
     }
 
-    private async Task ProcessSignInAsync(LoginViewModel model, User user)
+    public async Task<IActionResult> GoogleVerify()
     {
-        var rolesClaim = user.Roles.Select(role => new Claim(ClaimTypes.Role, role));
+        var credential = HttpContext.Request.Form["credential"];
+        var formToken = HttpContext.Request.Form["g_csrf_token"];
+        var cookiesToken = HttpContext.Request.Cookies["g_csrf_token"];
+        if (string.IsNullOrEmpty(credential) || string.IsNullOrEmpty(formToken) || string.IsNullOrEmpty(cookiesToken) ||
+            formToken != cookiesToken)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+        var googleClientId = _configuration.GetValue<string>("Authentication:Google:ClientId");
+        var settings = new GoogleJsonWebSignature.ValidationSettings()
+        {
+            Audience = new List<string> { googleClientId }
+        };
+        var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
+        if (payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com")
+        {
+            return RedirectToAction("Login", "Account");
+        }
+        await ProcessSignInAsync(payload.Name, new string[] { "Admin" }, "Google");
+        return RedirectToAction("Index", "Home");
+    }
+
+    private async Task ProcessSignInAsync(string userName, string[] userRoles, string loginType)
+    {
+        var rolesClaim = userRoles.Select(role => new Claim(ClaimTypes.Role, role));
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, model.Username),
-            new Claim("CustomData", Guid.NewGuid().ToString())
+            new Claim(ClaimTypes.Name, userName),
+            new Claim("LoginType", loginType),
         };
         claims.AddRange(rolesClaim);
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
