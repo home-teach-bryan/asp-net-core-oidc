@@ -4,16 +4,36 @@ using System.Text;
 using AspNetCoreOidc.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(item =>
+{
+    item.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
 
+    var requirement = new OpenApiSecurityRequirement();
+    requirement.Add(new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
+            {
+                Type = ReferenceType.SecurityScheme, Id = "bearerAuth"
+            }
+        },
+        new string[] { }
+    );
+                
+    item.AddSecurityRequirement(requirement);
+});
 var keyCloak = builder.Configuration.GetSection("KeyCloakConfig").Get<KeyCloakConfig>();
 
 builder.Services.AddAuthentication(options =>
@@ -22,7 +42,6 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
-    
     options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -35,8 +54,6 @@ builder.Services.AddAuthentication(options =>
     };
     options.MetadataAddress = "http://localhost:8080/realms/master/.well-known/openid-configuration";
 });
-
-
 
 builder.Services.AddAuthorization();
 
