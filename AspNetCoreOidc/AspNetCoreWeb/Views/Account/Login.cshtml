@@ -20,8 +20,25 @@
     </div>
 
     <button type="submit" class="btn btn-primary">Login</button>
+
+    <div id="g_id_onload"
+         data-client_id="588766682984-bsi3hlg5mufvlpdai97gc3lnr5ipshqn.apps.googleusercontent.com"
+         data-login_uri="https://localhost:5068/signin-google"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
+    
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<script src="https://accounts.google.com/gsi/client" async></script>

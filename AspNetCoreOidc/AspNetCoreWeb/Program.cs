@@ -19,6 +19,12 @@ public class Program
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             });
 
+        builder.Services.AddAuthentication().AddGoogle(googleOptions =>
+        {
+            googleOptions.ClientId = builder.Configuration.GetValue<string>("Authentication:Google:ClientId");
+            googleOptions.ClientSecret = builder.Configuration.GetValue<string>("Authentication:Google:ClientSecret");
+        });
+        
         var app = builder.Build();
         if (!app.Environment.IsDevelopment())
         {
