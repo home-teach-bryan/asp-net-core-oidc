@@ -1,0 +1,20 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Claims";
+}
+
+<div class="text-center">
+    <h1 class="display-4">User Claims</h1>
+    <ul>
+        @{
+            var claims = ViewData["Claims"] as IEnumerable<Claim>;
+
+            foreach (var claim in claims)
+            {
+                <li>
+                    <div>@claim.Type: @claim.Value</div>
+                </li>
+            }
+        }
+    </ul>
+</div>
