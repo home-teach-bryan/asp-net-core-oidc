@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using AspNetCoreWeb.Models;
+using AspNetCoreWeb.Models.Enum;
 using AspNetCoreWeb.Service;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authentication;
@@ -33,14 +34,12 @@ public class AccountController : Controller
         {
             return View(model);
         }
-
         var (isValid, user) = _userService.IsValid(model.Username, model.Password);
         if (!isValid)
         {
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-        }
-
-        await ProcessSignInAsync(user.Name, user.Roles, "SelfHost");
+        }        
+        await ProcessSignInAsync(user.Name, user.Roles, LoginType.SelfHost);
         return RedirectToAction("Index", "Home");
     }
 
@@ -71,24 +70,24 @@ public class AccountController : Controller
         {
             return RedirectToAction("Login", "Account");
         }
-        await ProcessSignInAsync(payload.Name, new string[] { "Admin" }, "Google");
+        await ProcessSignInAsync(payload.Name, new string[] { "Admin" }, LoginType.Google);
         return RedirectToAction("Index", "Home");
     }
 
-    private async Task ProcessSignInAsync(string userName, string[] userRoles, string loginType)
+    private async Task ProcessSignInAsync(string userName, string[] userRoles, LoginType loginType)
     {
         var rolesClaim = userRoles.Select(role => new Claim(ClaimTypes.Role, role));
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, userName),
-            new Claim("LoginType", loginType),
+            new Claim(nameof(LoginType), loginType.ToString()),
         };
         claims.AddRange(rolesClaim);
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var authProperties = new AuthenticationProperties
         {
             IsPersistent = true,
-            ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) // Cookie 30 分鐘後過期
+            ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
         };
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,

@@ -1,5 +1,9 @@
+using System.Security.Claims;
+using AspNetCoreWeb.Authorization;
+using AspNetCoreWeb.Models.Enum;
 using AspNetCoreWeb.Service;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AspNetCoreWeb;
 
@@ -18,6 +22,16 @@ public class Program
                 options.LogoutPath = "/Account/Logout";
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             });
+        builder.Services.AddSingleton<IAuthorizationHandler, SelfHostAuthorizationHandler>();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("EmployeeOnly", policy =>
+            {
+                policy.RequireRole("Employee");
+                policy.RequireClaim(ClaimTypes.Name, "Employee");
+                policy.Requirements.Add(new SelfHostRequirement(LoginType.SelfHost));
+            });
+        });
         
         var app = builder.Build();
         if (!app.Environment.IsDevelopment())

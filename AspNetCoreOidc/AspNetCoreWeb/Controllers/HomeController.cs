@@ -9,14 +9,16 @@ namespace AspNetCoreWeb.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly IAuthorizationService _authorizationService;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, IAuthorizationService authorizationService)
     {
         _logger = logger;
+        _authorizationService = authorizationService;
     }
 
     [Authorize]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         var user = HttpContext.User.Claims;
         var userNameCliam = user.FirstOrDefault(item => item.Type == ClaimTypes.Name);
@@ -36,6 +38,12 @@ public class HomeController : Controller
         ViewData["Claims"] = claims;
         return View();
     }
+
+    [Authorize(Policy = "EmployeeOnly")]
+    public IActionResult EmployeeOnly()
+    {
+        return View();
+    }   
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

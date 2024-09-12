@@ -9,4 +9,5 @@ public class User
     public string Password { get; set; }
     
     public string[] Roles { get; set; }
+    
 }

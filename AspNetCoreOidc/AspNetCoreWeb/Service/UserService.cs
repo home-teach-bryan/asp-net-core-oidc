@@ -9,6 +9,8 @@ public class UserService : IUserService
         new User { Id = Guid.NewGuid(), Name = "SuperAdmin", Password = "SuperAdmin", Roles = new[] { "Admin", "User" } },
         new User { Id = Guid.NewGuid(), Name = "Admin", Password = "Admin", Roles = new[] { "Admin" } },
         new User { Id = Guid.NewGuid(), Name = "User", Password = "User", Roles = new[] { "User" } },
+        new User { Id = Guid.NewGuid(), Name = "Employee", Password = "Employee", Roles = new[] { "Employee" }},  
+        new User { Id = Guid.NewGuid(), Name = "Employee2", Password = "Employee2", Roles = new[] { "Employee" }}  
     };
 
     public (bool isValid, User user) IsValid(string name, string password)

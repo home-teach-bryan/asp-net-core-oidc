@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IAuthorizationService _authorizationService
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -30,6 +34,18 @@
                             </li>                            
                         }
                     }
+                    
+                    @{
+
+                        var isPass = await _authorizationService.AuthorizeAsync(Context.User, "EmployeeOnly");
+                        if (isPass.Succeeded)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="EmployeeOnly">EmployeeOnly</a>
+                            </li>
+                        }
+                    }
+                    
                 </ul>
                 <ul class="navbar-nav">
                     @{
