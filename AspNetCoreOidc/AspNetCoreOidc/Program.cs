@@ -45,14 +45,13 @@ builder.Services.AddAuthentication(options =>
     options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateAudience = true,
-        ValidAudience = keyCloak.Audience,
+        ValidateAudience = false,
         ValidateIssuer = true,
         ValidIssuer = keyCloak.Authority,
         ValidateIssuerSigningKey = true,
         ValidateLifetime = true
     };
-    options.MetadataAddress = "http://localhost:8080/realms/master/.well-known/openid-configuration";
+    options.MetadataAddress = keyCloak.MetaAddress;
 });
 
 builder.Services.AddAuthorization();

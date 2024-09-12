@@ -7,7 +7,7 @@ namespace AspNetCoreOidc.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpGet("claims")]
         public IActionResult Get()
         {
